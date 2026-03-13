@@ -1,0 +1,770 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes">
+    <title>Gaz & Élégance • Livraison Premium Cocody 8e</title>
+    <!-- Font Awesome 6 (Free) -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <!-- Google Fonts : Inter & Playfair Display pour le luxe -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,400;14..32,500;14..32,600;14..32,700&family=Playfair+Display:wght@400;500;600&display=swap" rel="stylesheet">
+    <!-- Leaflet (OpenStreetMap) pour la carte gratuite et précise -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: #faf9f6;
+            color: #1e1e1e;
+            line-height: 1.5;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        /* Structure principale */
+        .app {
+            max-width: 500px;
+            margin: 0 auto;
+            background: white;
+            box-shadow: 0 0 50px rgba(0,0,0,0.05);
+            min-height: 100vh;
+            position: relative;
+            border-radius: 32px 32px 0 0;
+            overflow: hidden;
+        }
+
+        /* Header stylé */
+        .header {
+            padding: 24px 20px 16px;
+            background: linear-gradient(145deg, #ffffff 0%, #fbf9f4 100%);
+            border-bottom: 1px solid rgba(0,0,0,0.05);
+        }
+
+        .logo-badge {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 16px;
+        }
+
+        .logo {
+            font-family: 'Playfair Display', serif;
+            font-weight: 600;
+            font-size: 24px;
+            letter-spacing: -0.5px;
+            background: linear-gradient(135deg, #c84e1e, #b13e12);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .logo i {
+            background: none;
+            -webkit-text-fill-color: #c84e1e;
+            margin-right: 4px;
+        }
+
+        .badge-premium {
+            background: #1e1e1e;
+            color: #f5c542;
+            padding: 6px 12px;
+            border-radius: 100px;
+            font-size: 12px;
+            font-weight: 600;
+            letter-spacing: 0.3px;
+        }
+
+        /* Localisation en direct */
+        .live-location-card {
+            background: #ffffff;
+            border-radius: 28px;
+            padding: 16px;
+            box-shadow: 0 10px 30px -5px rgba(0,0,0,0.08);
+            border: 1px solid rgba(0,0,0,0.02);
+            margin-bottom: 16px;
+            backdrop-filter: blur(10px);
+        }
+
+        .gps-header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 12px;
+        }
+
+        .pulse-dot {
+            width: 12px;
+            height: 12px;
+            background: #2b8c5e;
+            border-radius: 50%;
+            box-shadow: 0 0 0 0 rgba(43, 140, 94, 0.5);
+            animation: pulse 1.5s infinite;
+        }
+
+        @keyframes pulse {
+            0% { box-shadow: 0 0 0 0 rgba(43, 140, 94, 0.6); }
+            70% { box-shadow: 0 0 0 10px rgba(43, 140, 94, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(43, 140, 94, 0); }
+        }
+
+        .gps-text {
+            font-weight: 600;
+            font-size: 14px;
+            color: #2b2b2b;
+        }
+
+        .gps-text span {
+            color: #7a7a7a;
+            font-weight: 400;
+            margin-left: 6px;
+        }
+
+        #address-display {
+            background: #f5f3f0;
+            border-radius: 18px;
+            padding: 14px 16px;
+            font-size: 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            border: 1px solid #eae7e2;
+            margin-bottom: 12px;
+        }
+
+        #address-display i {
+            color: #c84e1e;
+            font-size: 18px;
+        }
+
+        #map {
+            height: 150px;
+            width: 100%;
+            border-radius: 20px;
+            margin-top: 8px;
+            border: 1px solid #ece9e4;
+            z-index: 1;
+        }
+
+        .btn-locate {
+            background: white;
+            border: 1px solid #d0ccc6;
+            border-radius: 40px;
+            padding: 12px;
+            width: 100%;
+            font-weight: 600;
+            font-size: 15px;
+            color: #2b2b2b;
+            margin-top: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            transition: 0.2s;
+            cursor: pointer;
+        }
+
+        .btn-locate:hover {
+            background: #f9f6f0;
+        }
+
+        /* Deux gros CTA */
+        .services-rapid {
+            display: flex;
+            gap: 12px;
+            padding: 0 20px 20px;
+        }
+
+        .service-card {
+            flex: 1;
+            background: linear-gradient(145deg, #ffffff, #fbf9f4);
+            border-radius: 24px;
+            padding: 20px 12px;
+            text-align: center;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.02);
+            border: 1px solid #f0ede8;
+            transition: all 0.15s;
+            cursor: pointer;
+        }
+
+        .service-card:active {
+            transform: scale(0.98);
+            background: #f5f2eb;
+        }
+
+        .service-icon {
+            font-size: 32px;
+            margin-bottom: 8px;
+        }
+
+        .service-title {
+            font-weight: 700;
+            font-size: 16px;
+        }
+
+        .service-sub {
+            font-size: 12px;
+            color: #7a7a7a;
+            margin-top: 4px;
+        }
+
+        /* Sélection produit */
+        .section-title {
+            display: flex;
+            justify-content: space-between;
+            align-items: baseline;
+            padding: 0 20px 10px;
+        }
+
+        .section-title h3 {
+            font-weight: 700;
+            font-size: 18px;
+        }
+
+        .section-title a {
+            font-size: 13px;
+            color: #c84e1e;
+            font-weight: 600;
+            text-decoration: none;
+        }
+
+        .product-scroll {
+            display: flex;
+            gap: 16px;
+            overflow-x: auto;
+            padding: 0 20px 20px;
+            scrollbar-width: none;
+        }
+
+        .product-scroll::-webkit-scrollbar {
+            display: none;
+        }
+
+        .product-item {
+            min-width: 130px;
+            background: white;
+            border-radius: 28px;
+            padding: 16px 12px;
+            border: 1px solid #f0eae2;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.02);
+            position: relative;
+        }
+
+        .product-tag {
+            position: absolute;
+            top: 10px;
+            right: 12px;
+            background: #2b8c5e;
+            color: white;
+            font-size: 10px;
+            font-weight: 700;
+            padding: 4px 8px;
+            border-radius: 50px;
+        }
+
+        .product-item i {
+            font-size: 40px;
+            color: #b6aa9a;
+            margin-bottom: 12px;
+        }
+
+        .product-item h4 {
+            font-weight: 700;
+            margin-bottom: 4px;
+        }
+
+        .product-price {
+            font-weight: 600;
+            color: #1e1e1e;
+        }
+
+        .product-price small {
+            color: #8f8b85;
+            font-weight: 400;
+            font-size: 12px;
+        }
+
+        /* Nouveauté : suivi live */
+        .live-tracking-preview {
+            background: #171612;
+            border-radius: 28px;
+            margin: 10px 20px 20px;
+            padding: 18px;
+            color: white;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            border: 1px solid #3a3a3a;
+        }
+
+        .track-icon {
+            background: #2b8c5e;
+            width: 48px;
+            height: 48px;
+            border-radius: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+        }
+
+        .track-text {
+            flex: 1;
+        }
+
+        .track-text .small {
+            font-size: 12px;
+            opacity: 0.7;
+        }
+
+        .track-text strong {
+            font-size: 16px;
+            font-weight: 600;
+            display: block;
+        }
+
+        .track-badge {
+            background: #2b2b2b;
+            padding: 6px 14px;
+            border-radius: 50px;
+            color: #f5c542;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        /* Zone de commande rapide */
+        .quick-order {
+            padding: 10px 20px 30px;
+        }
+
+        .input-group {
+            background: #f5f3f0;
+            border-radius: 22px;
+            padding: 6px 6px 6px 18px;
+            display: flex;
+            align-items: center;
+            margin-bottom: 12px;
+            border: 1px solid #e2ded7;
+        }
+
+        .input-group i {
+            color: #c84e1e;
+            font-size: 18px;
+        }
+
+        .input-group input, 
+        .input-group textarea {
+            border: none;
+            background: transparent;
+            padding: 14px 12px;
+            width: 100%;
+            font-family: 'Inter', sans-serif;
+            font-size: 15px;
+            outline: none;
+        }
+
+        .double-input {
+            display: flex;
+            gap: 12px;
+        }
+
+        .double-input .input-group {
+            flex: 1;
+        }
+
+        .btn-command-ultra {
+            background: #c84e1e;
+            color: white;
+            border: none;
+            width: 100%;
+            padding: 20px;
+            border-radius: 50px;
+            font-weight: 700;
+            font-size: 18px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+            box-shadow: 0 15px 25px -8px rgba(200, 78, 30, 0.3);
+            margin-top: 20px;
+            transition: 0.2s;
+            cursor: pointer;
+        }
+
+        .btn-command-ultra:active {
+            transform: translateY(2px);
+            box-shadow: 0 8px 15px -5px rgba(200, 78, 30, 0.4);
+        }
+
+        /* Fidélité */
+        .fidelity-bar {
+            background: #fff3e0;
+            border-radius: 18px;
+            padding: 14px 18px;
+            margin: 10px 20px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .points {
+            font-weight: 800;
+            font-size: 26px;
+            color: #b13e12;
+        }
+
+        .progress {
+            flex: 1;
+            height: 8px;
+            background: #e0cfbf;
+            border-radius: 20px;
+        }
+
+        .progress-fill {
+            width: 65%;
+            height: 8px;
+            background: #c84e1e;
+            border-radius: 20px;
+        }
+
+        /* Footer */
+        .footer {
+            padding: 20px;
+            text-align: center;
+            font-size: 13px;
+            color: #9b9791;
+            border-top: 1px solid #f0ede8;
+        }
+
+        /* Popup modal confirmation (ultra pro) */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.4);
+            backdrop-filter: blur(5px);
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+        }
+
+        .modal-content {
+            background: white;
+            max-width: 340px;
+            width: 90%;
+            border-radius: 48px;
+            padding: 30px 20px;
+            text-align: center;
+            box-shadow: 0 30px 50px rgba(0,0,0,0.3);
+        }
+
+        .checkmark {
+            width: 80px;
+            height: 80px;
+            background: #2b8c5e;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 20px;
+            font-size: 40px;
+            color: white;
+        }
+    </style>
+</head>
+<body>
+    <div class="app">
+        <!-- Header avec logo -->
+        <div class="header">
+            <div class="logo-badge">
+                <div class="logo">
+                    <i class="fas fa-fire"></i> Gaz & Élégance
+                </div>
+                <div class="badge-premium"><i class="fas fa-crown" style="margin-right: 4px;"></i>COCODY 8E</div>
+            </div>
+
+            <!-- LIVE GPS CARD -->
+            <div class="live-location-card">
+                <div class="gps-header">
+                    <div class="pulse-dot"></div>
+                    <div class="gps-text">Géolocalisation active <span id="gps-status">recherche...</span></div>
+                </div>
+                <div id="address-display">
+                    <i class="fas fa-map-pin"></i>
+                    <span id="address-line">Autorisez la localisation pour une livraison minute</span>
+                </div>
+                <!-- Mini carte interactive -->
+                <div id="map"></div>
+                <button class="btn-locate" id="refresh-location"><i class="fas fa-crosshairs"></i> Affiner ma position</button>
+            </div>
+        </div>
+
+        <!-- 2 services géants -->
+        <div class="services-rapid">
+            <div class="service-card" id="choose-gas">
+                <div class="service-icon"><i class="fas fa-gas-pump"></i></div>
+                <div class="service-title">LIVRAISON GAZ</div>
+                <div class="service-sub">30 min chrono</div>
+            </div>
+            <div class="service-card" id="choose-rent">
+                <div class="service-icon"><i class="fas fa-chair"></i></div>
+                <div class="service-title">LOCATION</div>
+                <div class="service-sub">Bâches · Chaises</div>
+            </div>
+        </div>
+
+        <!-- Section gaz populaire -->
+        <div class="section-title">
+            <h3>🔥 Gaz disponibles</h3>
+            <a href="#" id="see-all-gas">Voir tout <i class="fas fa-arrow-right"></i></a>
+        </div>
+        <div class="product-scroll" id="gas-section">
+            <div class="product-item">
+                <span class="product-tag">Échange</span>
+                <i class="fas fa-burn"></i>
+                <h4>6 kg</h4>
+                <div class="product-price">4 500 F <small>+ consigne</small></div>
+            </div>
+            <div class="product-item">
+                <span class="product-tag">Neuf</span>
+                <i class="fas fa-burn"></i>
+                <h4>12 kg</h4>
+                <div class="product-price">8 500 F <small>cons. incl.</small></div>
+            </div>
+            <div class="product-item">
+                <span class="product-tag">Premium</span>
+                <i class="fas fa-burn"></i>
+                <h4>15 kg</h4>
+                <div class="product-price">10 900 F <small>butane</small></div>
+            </div>
+        </div>
+
+        <!-- Section location -->
+        <div class="section-title" style="margin-top: 5px;">
+            <h3>🪑 Location événementielle</h3>
+            <a href="#" id="see-all-rent">Voir tout</a>
+        </div>
+        <div class="product-scroll" id="rent-section">
+            <div class="product-item">
+                <i class="fas fa-chair"></i>
+                <h4>Chaise classique</h4>
+                <div class="product-price">500 F <small>/unité</small></div>
+            </div>
+            <div class="product-item">
+                <i class="fas fa-umbrella-beach"></i>
+                <h4>Bâche 4x6m</h4>
+                <div class="product-price">7 500 F <small>/jour</small></div>
+            </div>
+            <div class="product-item">
+                <i class="fas fa-couch"></i>
+                <h4>Chaise wedding</h4>
+                <div class="product-price">1 200 F <small>/unité</small></div>
+            </div>
+        </div>
+
+        <!-- Bandeau suivi live (jamais vu) -->
+        <div class="live-tracking-preview">
+            <div class="track-icon"><i class="fas fa-truck"></i></div>
+            <div class="track-text">
+                <span class="small">Nouveau : Live tracking</span>
+                <strong>Suis ton livreur en temps réel</strong>
+            </div>
+            <div class="track-badge"><i class="fas fa-eye"></i> 4 actifs</div>
+        </div>
+
+        <!-- Formulaire de commande ultra complet -->
+        <div class="quick-order">
+            <div class="input-group">
+                <i class="fas fa-phone-alt"></i>
+                <input type="tel" placeholder="Numéro de téléphone" id="phone" value="+225 ">
+            </div>
+            <div class="input-group">
+                <i class="fas fa-map-marker-alt"></i>
+                <input type="text" placeholder="Adresse (compléter si besoin)" id="street" value="Cocody 8e Tranche">
+            </div>
+            <div class="double-input">
+                <div class="input-group">
+                    <i class="fas fa-hashtag"></i>
+                    <input type="text" placeholder="N° villa/porte" id="door">
+                </div>
+                <div class="input-group">
+                    <i class="fas fa-layers"></i>
+                    <input type="text" placeholder="Code (optionnel)" id="code">
+                </div>
+            </div>
+            <div class="input-group">
+                <i class="fas fa-pencil-alt"></i>
+                <textarea rows="2" placeholder="Instructions livreur (ex: derrière l'église, portail vert...)" id="instructions"></textarea>
+            </div>
+
+            <!-- Photo upload simulé (prestige) -->
+            <div style="display: flex; gap: 10px; margin: 15px 0;">
+                <span style="background:#eae7e2; padding: 10px 18px; border-radius: 40px; font-size:14px;"><i class="fas fa-camera"></i> Photo porte (optionnel)</span>
+            </div>
+
+            <!-- Bouton commander -->
+            <button class="btn-command-ultra" id="place-order">
+                <i class="fas fa-flash"></i> CONFIRMER LA COMMANDE <i class="fas fa-arrow-right"></i>
+            </button>
+        </div>
+
+        <!-- Fidélité gamifié -->
+        <div class="fidelity-bar">
+            <span class="points">460</span>
+            <div style="flex:1">
+                <div style="display: flex; justify-content: space-between; font-size: 12px; font-weight: 600; margin-bottom: 6px;">
+                    <span>Points fidélité</span> <span>Prochaine bâche gratuite</span>
+                </div>
+                <div class="progress">
+                    <div class="progress-fill" style="width: 65%;"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Footer -->
+        <div class="footer">
+            <i class="fas fa-shield-alt"></i> Livraison premium Cocody 8e Tranche · 24h/24
+        </div>
+    </div>
+
+    <!-- Modal de confirmation (qui apparaît à la commande) -->
+    <div class="modal-overlay" id="success-modal">
+        <div class="modal-content">
+            <div class="checkmark"><i class="fas fa-check"></i></div>
+            <h2 style="margin-bottom: 10px;">Commande reçue !</h2>
+            <p style="color: #4a4a4a;">Livraison dans ±25 min. Le livreur arrive.<br> <strong style="color:#c84e1e;">Suivi en direct activé</strong></p>
+            <button style="background:#c84e1e; color:white; border:none; padding: 15px 30px; border-radius: 40px; margin-top: 20px; font-weight: bold; width: 100%;" id="close-modal">Suivre ma commande</button>
+        </div>
+    </div>
+
+    <!-- Librairies JS -->
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script>
+        (function() {
+            // ---------- Carte et géolocalisation (ultra pro) ----------
+            let map;
+            let marker;
+            let currentLat = 5.3600;  // approximatif Cocody
+            let currentLon = -3.9800;
+
+            // Initialisation de la carte
+            function initMap(lat, lon) {
+                if (!map) {
+                    map = L.map('map').setView([lat, lon], 17);
+                    L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
+                        attribution: '&copy; OpenStreetMap'
+                    }).addTo(map);
+                    marker = L.marker([lat, lon], { draggable: true }).addTo(map);
+                } else {
+                    map.setView([lat, lon], 17);
+                    marker.setLatLng([lat, lon]);
+                }
+
+                // Quand on déplace le marqueur
+                marker.on('dragend', function(e) {
+                    const pos = e.target.getLatLng();
+                    currentLat = pos.lat;
+                    currentLon = pos.lng;
+                    updateAddressFromCoords(pos.lat, pos.lon);
+                });
+            }
+
+            // Reverse geocoding (simulé avec un affichage stylé)
+            function updateAddressFromCoords(lat, lon) {
+                // Dans la vraie vie, appel API nominatim. Ici on génère une rue fictive chic.
+                const rues = ['Rue L109', 'Boulevard des Ambassadeurs', 'Avenue Jean Mermoz', 'Impasse des Jardins', 'Rue du Commandement'];
+                const rue = rues[Math.floor(Math.random() * rues.length)];
+                const numero = Math.floor(Math.random() * 50) + 10;
+                document.getElementById('address-line').innerText = `${numero} ${rue}, Cocody 8e Tranche`;
+                document.getElementById('street').value = `${numero} ${rue}, Cocody 8e Tranche`;
+                document.getElementById('gps-status').innerText = 'précise';
+            }
+
+            // Géolocalisation native
+            function locateUser() {
+                document.getElementById('gps-status').innerText = 'recherche...';
+                if (navigator.geolocation) {
+                    navigator.geolocation.getCurrentPosition(
+                        function(position) {
+                            currentLat = position.coords.latitude;
+                            currentLon = position.coords.longitude;
+                            initMap(currentLat, currentLon);
+                            updateAddressFromCoords(currentLat, currentLon);
+                        },
+                        function(error) {
+                            alert("Veuillez autoriser la géolocalisation pour une expérience premium. On utilise Cocody par défaut.");
+                            initMap(5.3600, -3.9800);
+                            updateAddressFromCoords(5.3600, -3.9800);
+                        }
+                    );
+                } else {
+                    alert("Géolocalisation non supportée. Position approximative.");
+                    initMap(5.3600, -3.9800);
+                    updateAddressFromCoords(5.3600, -3.9800);
+                }
+            }
+
+            // Rafraîchir manuellement
+            document.getElementById('refresh-location').addEventListener('click', locateUser);
+
+            // Dès le chargement, lancer la géoloc
+            window.addEventListener('load', function() {
+                locateUser();
+            });
+
+            // Clic sur les cartes services (simulation)
+            document.getElementById('choose-gas').addEventListener('click', function() {
+                document.getElementById('gas-section').scrollIntoView({ behavior: 'smooth' });
+            });
+            document.getElementById('choose-rent').addEventListener('click', function() {
+                document.getElementById('rent-section').scrollIntoView({ behavior: 'smooth' });
+            });
+
+            // BOUTON COMMANDE ULTRA
+            document.getElementById('place-order').addEventListener('click', function() {
+                // Vérifications basiques
+                const phone = document.getElementById('phone').value;
+                const street = document.getElementById('street').value;
+                const door = document.getElementById('door').value;
+                if (phone.length < 9 || street.length < 3) {
+                    alert("📱 Veuillez remplir le téléphone et l'adresse correctement.");
+                    return;
+                }
+
+                // Ici, on pourrait envoyer les données, mais on affiche la modal de ouf
+                const modal = document.getElementById('success-modal');
+                modal.style.display = 'flex';
+
+                // On pourrait stocker la commande, mais on simule.
+                console.log("Commande passée:", { phone, street, door, lat: currentLat, lon: currentLon });
+            });
+
+            // Fermer modal
+            document.getElementById('close-modal').addEventListener('click', function() {
+                document.getElementById('success-modal').style.display = 'none';
+            });
+
+            // Petite feature : mettre automatiquement l'adresse dans le champ "adresse" lors de la géoloc
+            // déjà géré par updateAddressFromCoords
+
+            // Option: voir tout (liens doux)
+            document.getElementById('see-all-gas').addEventListener('click', function(e) {
+                e.preventDefault();
+                alert("Catalogue complet : 6kg, 9kg, 12kg, 15kg, 18kg (professionnel)");
+            });
+            document.getElementById('see-all-rent').addEventListener('click', function(e) {
+                e.preventDefault();
+                alert("Location: chaises (classique, wedding, pliantes), bâches (3x4, 4x6, 6x8), tables, housses.");
+            });
+
+            // Petite astuce pour le numéro +225
+            document.getElementById('phone').addEventListener('focus', function() {
+                if (this.value === '+225 ') this.value = '+225 ';
+            });
+        })();
+    </script>
+</body>
+</html>
